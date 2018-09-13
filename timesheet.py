@@ -1,17 +1,28 @@
 from datetime import datetime, timedelta
+from tabulate import tabulate
+import json
 import pandas as pd
+import subprocess
 
-week = []
+timesheet = pd.DataFrame()
 
 today = datetime.today()
 start = today - timedelta(days=today.weekday())
 
 for i in range(7):
-    this = start + timedelta(days=i)
-    week.append(this.strftime('%Y-%m-%d'))
+    date = (start + timedelta(days=i)).strftime('%Y-%m-%d')
+    report = subprocess.Popen(['watson', 'report', '--json',
+          '--from', date,
+          '--to', date],
+          stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout,stderr = report.communicate()
+    data = json.loads(stdout.decode('utf8'))
 
-print(week)
+    timesheet.at['Total', date] = str(timedelta(seconds=data['time']))
 
-timesheet = pd.DataFrame(columns = week)
+    for project in data['projects']:
+        timesheet.at[project['name'], date] = str(timedelta(seconds=project['time']))
 
-timesheet
+timesheet.fillna('', inplace=True)
+print(tabulate(timesheet, headers='keys', tablefmt='psql'))
+
