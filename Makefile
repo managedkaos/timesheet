@@ -1,7 +1,12 @@
+all: frames timesheet
+
+frames:
+	@python frames.py > ./watson_dir/frames
+
 timesheet:
-	python ./timesheet.py
+	python timesheet.py
 
 lint:
-	pylint ./timesheet.py
+	pylint timesheet.py frames.py
 
-.PHONY: timesheet lint
+.PHONY: all frames timesheet lint
