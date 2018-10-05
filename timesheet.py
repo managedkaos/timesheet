@@ -1,28 +1,30 @@
-from datetime import datetime, timedelta
-from tabulate import tabulate
+''' Module: timesheet.py - A timesheet generator'''
 import json
-import pandas as pd
 import subprocess
+from datetime import datetime, timedelta
+import pandas as pd
+from tabulate import tabulate
 
-timesheet = pd.DataFrame()
+TIMESHEET = pd.DataFrame()
 
-today = datetime.today()
-start = today - timedelta(days=today.weekday())
+TODAY = datetime.today()
+START = TODAY - timedelta(days=TODAY.weekday())
 
 for i in range(7):
-    date = (start + timedelta(days=i)).strftime('%Y-%m-%d')
+    date = (START + timedelta(days=i)).strftime('%Y-%m-%d')
     report = subprocess.Popen(['watson', 'report', '--json',
-          '--from', date,
-          '--to', date],
-          stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout,stderr = report.communicate()
+                               '--from', date,
+                               '--to', date],
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT)
+    stdout, stderr = report.communicate()
     data = json.loads(stdout.decode('utf8'))
 
-    timesheet.at['Total', date] = str(timedelta(seconds=data['time']))
+    TIMESHEET.at['Total', date] = str(timedelta(seconds=data['time']))
 
     for project in data['projects']:
-        timesheet.at[project['name'], date] = str(timedelta(seconds=project['time']))
+        TIMESHEET.at[project['name'],
+                     date] = str(timedelta(seconds=project['time']))
 
-timesheet.fillna('', inplace=True)
-print(tabulate(timesheet, headers='keys', tablefmt='psql'))
-
+TIMESHEET.fillna('', inplace=True)
+print(tabulate(TIMESHEET, headers='keys', tablefmt='psql'))

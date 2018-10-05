@@ -1,3 +1,7 @@
+PYLINT = $(HOME)/Envs/Timesheet/bin/pylint
+PYCODESTYLE = $(HOME)/Envs/Timesheet/bin/pycodestyle --statistics
+FILES = timesheet.py frames.py
+
 all: frames timesheet
 
 frames:
@@ -6,7 +10,8 @@ frames:
 timesheet:
 	python timesheet.py
 
-lint:
-	pylint timesheet.py frames.py
+lint: $(FILES)
+	$(PYLINT) $(FILES)
+	$(PYCODESTYLE) $(FILES)
 
 .PHONY: all frames timesheet lint
